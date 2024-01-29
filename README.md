@@ -17,6 +17,7 @@ You can install the required dependencies using the following commands:
 ```bash
 pip install python>=3.8
 pip install chainlit
+```bash
 
 ## Usage
 
@@ -24,4 +25,4 @@ To run PasswordCrackHPC, use the following command:
 
 ```bash
 chainlit run app.py -w
-
+```bash
