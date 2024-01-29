@@ -21,7 +21,7 @@ pip install chainlit
 
 ## Usage
 
-To run PasswordCrackHPC, use the following command:
+To run PasswordCrackHPC, clone the repository and then run the following command:
 
 ```bash
 chainlit run app.py -w
