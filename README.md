@@ -12,17 +12,16 @@ To run PasswordCrackHPC, ensure you have the following dependencies installed:
 - Python 3.8 or higher
 - Chainlit library
 
-You can install the required dependencies using the following commands:
+You can install the required chainlit dependency using the following command:
 
 ```bash
-pip install python>=3.8
 pip install chainlit
-```bash
+```
 
 ## Usage
 
-To run PasswordCrackHPC, use the following command:
+To run PasswordCrackHPC, clone the repository and then run the following command:
 
 ```bash
 chainlit run app.py -w
-```bash
+```
