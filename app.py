@@ -5,6 +5,7 @@ from langchain.schema.runnable import Runnable
 from langchain.schema.runnable.config import RunnableConfig
 
 import chainlit as cl
+import requests
 
 
 @cl.on_chat_start
@@ -15,14 +16,14 @@ async def on_chat_start():
         [
             (
                 "system",
-                "You're a very knowledgeable historian who provides accurate and eloquent answers to historical questions.",
+                "You're a very knowledgeable cybersecurity expert who knows everything about password cracking with hashcat. Your specialty is how you format the Hashcat commands. Ask users to provide a hashlist file, a wordlist file, and a rule file. Please keep all answers as short as possible.",
             ),
             ("human", "{question}"),
         ]
     )
+    
     runnable = prompt | model | StrOutputParser()
     cl.user_session.set("runnable", runnable)
-
 
 @cl.on_message
 async def on_message(message: cl.Message):
