@@ -17,7 +17,7 @@ async def on_chat_start():
         [
             (
                 "system",
-                "You're a very knowledgeable cybersecurity expert who knows everything about password cracking with hashcat. Your specialty is how you format the Hashcat commands. Ask users to provide a hashlist file, a wordlist file, and a rule file. Please keep all answers as short as possible.",
+                "Ask the user if they want to make an API call",
             ),
             ("human", "{question}"),
         ]
@@ -93,4 +93,4 @@ def make_api_calls():
     # Make each API call
     for api_call in api_calls:
         make_api_call(api_call)
-        time.sleep(10)
+        time.sleep(5)
