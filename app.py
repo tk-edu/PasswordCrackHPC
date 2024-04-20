@@ -97,17 +97,17 @@ def make_api_calls():
             "request": "createHashlist",
             "name": "API Hashlist",
             "isSalted": False,
-            "isSecret": True,
+            "isSecret": False,
             "isHexSalt": False,
             "separator": ":",
             "format": 0,
             "hashtypeId": 0,
             "accessGroupId": 1,
-            "data": "YWFhCmFiYwphY2FkZW1pYQphY2FkZW1pYwphY2Nlc3MKYWRhCmFkbWluCmFkcmlhbgphZHJpYW5uYQphZXJvYmljcwphaXJwbGFuZQphbGJhbnk=",
+            "data": "NDdiY2U1Yzc0ZjU4OWY0ODY3ZGJkNTdlOWNhOWY4MDgKOTAwMTUwOTgzY2QyNGZiMGQ2OTYzZjdkMjhlMTdmNzIKMjExMDBlOWU2MDQwMGI5NzA0NDE5NDU5ZWMyYmFiZmQKOGRhNmY1ZTVlODAzZGFmZTcyY2FiZmRkOGFkYjQ3NmYKOWRmM2IwMWM2MGRmMjBkMTM4NDM4NDFmZjBkNDQ4MmMKOGM4ZDM1N2I1ZTg3MmJiYWNkNDUxOTc2MjZiZDU3NTkKMjEyMzJmMjk3YTU3YTVhNzQzODk0YTBlNGE4MDFmYzMKOGM0MjA1ZWMzM2Q4ZjZjYWVhYWFhMGMxMGExNDEzOGMKNGY3OWQxYWYxY2IzMjBhNmNiNjljZGIyN2MyMjc1OGMKYTAwM2NjMGJlNWM5MmQxZjU4YWQzNzYxYzBhYmIyMTIKNDVlYTM3YThiMDM0ZWNlNGQwODYzOWQxOGQ5MTNhZDAKZTEyMmYyNzA3ZmFlNWI3ODMzMzA5YmRiNjI0ODNhYjk=",
             "useBrain": False,
             "brainFeatures": 0,
             "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
-        },
+            }
 
         hashlistId = make_api_call(api_data);
         return hashlistId
