@@ -157,8 +157,7 @@ def make_api_calls():
             "skip": 0,
             "crackerVersionId": 1,
             "files": [
-                files[0]['id'],
-                files[1]['id']
+                file_list
             ],
             "priority": 1,
             "maxAgents": 1,
