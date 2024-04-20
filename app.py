@@ -110,9 +110,6 @@ def make_api_calls():
         },
 
         hashlistId = make_api_call(api_data);
-        print('-------------');
-        print("Hashlist ID:", hashlistId);
-        print('-------------');
         return hashlistId
 
     def add_file(api_data):
@@ -127,21 +124,13 @@ def make_api_calls():
 
         files = make_api_call(api_data);
 
-        print('-------------');
-        print("List of Files:");
-        print(files);
-        print('-------------');
-
         return files
 
     def create_task_data(files, hashlistId):
-        print("&******************")
         file_list = []
         for file in files['files']:
             file_list.append(file['fileId'])
 
-        print(file_list)
-        print("&******************")
         return {
             "section": "task",
             "request": "createTask",
@@ -168,9 +157,6 @@ def make_api_calls():
 
     def create_task(api_data):
         taskId = make_api_call(api_data);
-        print('-------------');
-        print("Task ID:", taskId);
-        print('-------------');
         return taskId
 
     # Example API calls
@@ -266,12 +252,18 @@ def make_api_calls():
 
     add_file(file_data_1);
     add_file(file_data_2);
+    print("FILES ADDED")
     files = list_files();
+    print("FILES LISTED: ")
+    print(files)
     hashlistId = create_hashlist();
+    print("HASHLIST CREATED")
+    print(hashlistId)
     taskData = create_task_data(files, hashlistId);
+    print("TASK DATA CREATED")
+    print(taskData)
     taskId = create_task(taskData);
-
-    print(hashlistId);
-    print(taskId);
+    print("TASK CREATED")
+    print(taskId)
 
     return "All API calls completed."
