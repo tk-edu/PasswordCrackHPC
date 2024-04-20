@@ -136,9 +136,12 @@ def make_api_calls():
 
     def create_task_data(files, hashlistId):
         print("&******************")
-        print("files", files)
-        print("files0", files.files[0]['id'])
-        print("files1", files.files[1]['id'])
+        file_list = []
+        for file in files['files']:
+            file_list.append(file['fileId'])
+
+        print(file_list)
+        print("&******************")
         return {
             "section": "task",
             "request": "createTask",
