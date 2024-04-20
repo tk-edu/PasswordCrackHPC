@@ -107,7 +107,7 @@ def make_api_calls():
             "useBrain": False,
             "brainFeatures": 0,
             "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
-        },
+        }
 
         hashlistId = make_api_call(api_data);
         return hashlistId
