@@ -97,7 +97,7 @@ def make_api_calls():
             "fileType": 0,
             "source": "url",
             "accessGroupId": 1,
-            "data": "https://github.com/kkrypt0nn/wordlists/blob/main/wordlists/passwords/common_passwords_win.txt",
+            "data": "https://raw.githubusercontent.com/kkrypt0nn/wordlists/main/wordlists/passwords/common_passwords_win.txt",
             "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
         },
         {
@@ -107,7 +107,7 @@ def make_api_calls():
             "fileType": 1,
             "source": "url",
             "accessGroupId": 1,
-            "data": "https://github.com/stealthsploit/OneRuleToRuleThemStill/blob/main/OneRuleToRuleThemStill.rule",
+            "data": "https://raw.githubusercontent.com/stealthsploit/OneRuleToRuleThemStill/main/OneRuleToRuleThemStill.rule",
             "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
         },
         
@@ -128,7 +128,7 @@ def make_api_calls():
             "format": 0,
             "hashtypeId": 0,
             "accessGroupId": 1,
-            "data": "YWFhCmFiYwphY2FkZW1pYQphY2FkZW1pYwphY2Nlc3MKYWRhCmFkbWluCmFkcmlhbgphZHJpYW5uYQphZXJvYmljcwphaXJwbGFuZQphbGJhbnk=",
+            "data": "NDdiY2U1Yzc0ZjU4OWY0ODY3ZGJkNTdlOWNhOWY4MDgKOTAwMTUwOTgzY2QyNGZiMGQ2OTYzZjdkMjhlMTdmNzIKMjExMDBlOWU2MDQwMGI5NzA0NDE5NDU5ZWMyYmFiZmQKOGRhNmY1ZTVlODAzZGFmZTcyY2FiZmRkOGFkYjQ3NmYKOWRmM2IwMWM2MGRmMjBkMTM4NDM4NDFmZjBkNDQ4MmMKOGM4ZDM1N2I1ZTg3MmJiYWNkNDUxOTc2MjZiZDU3NTkKMjEyMzJmMjk3YTU3YTVhNzQzODk0YTBlNGE4MDFmYzMKOGM0MjA1ZWMzM2Q4ZjZjYWVhYWFhMGMxMGExNDEzOGMKNGY3OWQxYWYxY2IzMjBhNmNiNjljZGIyN2MyMjc1OGMKYTAwM2NjMGJlNWM5MmQxZjU4YWQzNzYxYzBhYmIyMTIKNDVlYTM3YThiMDM0ZWNlNGQwODYzOWQxOGQ5MTNhZDAKZTEyMmYyNzA3ZmFlNWI3ODMzMzA5YmRiNjI0ODNhYjk=",
             "useBrain": False,
             "brainFeatures": 0,
             "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
@@ -137,7 +137,7 @@ def make_api_calls():
             "section": "task",
             "request": "createTask",
             "name": "API Task",
-            "hashlistId": 12, # Replace this with the actual hashlistId
+            "hashlistId": 27, # Replace this with the actual hashlistId
             "attackCmd": "#HL# -a 0 -r OneRuleToRuleThemStill.rule common_passwords_win.txt",
             "chunksize": 600,
             "statusTimer": 5,
@@ -148,11 +148,11 @@ def make_api_calls():
             "skip": 0,
             "crackerVersionId": 1,
             "files": [
-            30, # Replace this with the actual fileId for the rulelist
-            31  # Replace this with the actual fileId for the wordlist
+            49, # Replace this with the actual fileId for the rulelist
+            50  # Replace this with the actual fileId for the wordlist
             ],
             "priority": 1,
-            "maxAgents": 1,
+            "maxAgents": 4,
             "preprocessorId": 0,
             "preprocessorCommand": "",
             "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
@@ -160,20 +160,20 @@ def make_api_calls():
         {
             "section": "task",
             "request": "taskAssignAgent",
-            "agentId": 6,  
-            "taskId": 17,  # Replace this with the actual taskId
+            "agentId": 9,  
+            "taskId": 35,  # Replace this with the actual taskId
             "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
         },
         {
             "section": "task",
             "request": "getTask",
-            "taskId": 17,   # Replace this with the actual taskId
+            "taskId": 35,   # Replace this with the actual taskId
             "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
         },
        {
             "section": "task",
             "request": "getCracked",
-            "taskId": 17,   # Replace this with the actual taskId
+            "taskId": 35,   # Replace this with the actual taskId
             "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
         }
         # Add the rest of your API calls here...
