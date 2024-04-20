@@ -108,14 +108,8 @@ def make_api_calls():
             "brainFeatures": 0,
             "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
             }
-<<<<<<< HEAD
-        
-        response = make_api_call(api_data);
-        hashlistId = response['hashlistId']
-=======
 
         hashlistId = make_api_call(api_data);
->>>>>>> 127228881f58c3498e52e55abdd4790fc7307fc2
         return hashlistId
 
     def add_file(api_data):
