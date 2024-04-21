@@ -53,7 +53,7 @@ async def on_message(message: cl.Message):
     msg = cl.Message(content="")
 
     if re.search(r"make an api call", message.content, re.IGNORECASE):
-        api_result = make_api_calls()
+        api_result = make_all_calls()
         await msg.stream_token(f"API Result: {api_result}\n")
     else:
         async for chunk in runnable.astream(
@@ -64,7 +64,7 @@ async def on_message(message: cl.Message):
 
         await msg.send()
 
-def make_api_calls():
+def make_all_calls():
     def make_api_call(api_data):
         url = "http://localhost:8080/api/user.php"
         headers = {"Content-Type": "application/json"}
