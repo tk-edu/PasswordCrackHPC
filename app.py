@@ -9,10 +9,6 @@ from langchain.schema.runnable.config import RunnableConfig
 import chainlit as cl
 import requests
 
-wordlist = ""
-rulelist = ""
-hashlist = ""
-
 file_data_1 = {
     "section": "file",
     "request": "addFile",
@@ -199,35 +195,49 @@ def make_api_calls():
         return passwords
     
 
+    # Add files
     add_file(file_data_1)
     add_file(file_data_2)
     print("FILES ADDED")
+    
+    # List files
     files = list_files()
     print("FILES LISTED: ")
     print(files)
+    
+    # Create hashlist
     hashlistId = create_hashlist()
     print("HASHLIST CREATED")
     print(hashlistId)
+    
+    # Create task data
     taskData = create_task_data(files, hashlistId)
     print("TASK DATA CREATED")
     print(taskData)
+    
+    # Create task
     taskId = create_task(taskData)
     print("TASK CREATED")
     print(taskId)
+    
+    # Assign agent
     agent = assign_agent(9,taskId)
     print("AGENT ASSIGNED")
     print(agent)
     
+    # Check task status
     while get_task(taskId).get('isComplete') != True:
         getTask = get_task(taskId)
         print("TASK DETAILS")
         print(getTask)
         time.sleep(5)
         
+    # Get cracked passwords
     cracked = get_cracked(taskId)
     print("CRACKED")
     print(cracked)
     
+    # Get plain text passwords
     plain_text_passwords = get_plain_text_passwords(cracked)
 
     return plain_text_passwords
