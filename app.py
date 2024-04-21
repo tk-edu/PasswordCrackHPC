@@ -84,7 +84,7 @@ def make_api_calls():
             print("API call successful!")
             print("Response:", response.json())
 
-            return response.json();
+            return response.json()
 
         else:
             print("API call failed with status code:", response.status_code)
@@ -109,11 +109,11 @@ def make_api_calls():
             "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
             }
 
-        hashlistId = make_api_call(api_data);
+        hashlistId = make_api_call(api_data)
         return hashlistId
 
     def add_file(api_data):
-        return make_api_call(api_data);
+        return make_api_call(api_data)
 
     def list_files():
         api_data = {
@@ -122,7 +122,7 @@ def make_api_calls():
             "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
         }
 
-        files = make_api_call(api_data);
+        files = make_api_call(api_data)
 
         return files
 
@@ -130,6 +130,8 @@ def make_api_calls():
         file_list = []
         for file in files['files']:
             file_list.append(file['fileId'])
+            
+        hashlistId = hashlistId.get('hashlistId')
 
         return {
             "section": "task",
@@ -145,9 +147,7 @@ def make_api_calls():
             "isSmall": True,
             "skip": 0,
             "crackerVersionId": 1,
-            "files": [
-                file_list
-            ],
+            "files": file_list,
             "priority": 1,
             "maxAgents": 1,
             "preprocessorId": 0,
@@ -156,114 +156,78 @@ def make_api_calls():
         }
 
     def create_task(api_data):
-        taskId = make_api_call(api_data);
+        taskId = make_api_call(api_data)
+        taskId = taskId.get('taskId')
         return taskId
-
-    # Example API calls
-    api_calls = [
-        {
-            "section": "file",
-            "request": "addFile",
-            "filename": "doesnt-matter1.txt",
-            "fileType": 0,
-            "source": "url",
-            "accessGroupId": 1,
-            "data": "https://github.com/kkrypt0nn/wordlists/blob/main/wordlists/passwords/common_passwords_win.txt",
-            "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
-        },
-        {
-            "section": "file",
-            "request": "addFile",
-            "filename": "doesnt-matter1.txt",
-            "fileType": 1,
-            "source": "url",
-            "accessGroupId": 1,
-            "data": "https://github.com/stealthsploit/OneRuleToRuleThemStill/blob/main/OneRuleToRuleThemStill.rule",
-            "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
-        },
-
-        {
-            "section": "file",
-            "request": "listFiles",
-            "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
-        },
-
-        {
-            "section": "hashlist",
-            "request": "createHashlist",
-            "name": "API Hashlist",
-            "isSalted": False,
-            "isSecret": True,
-            "isHexSalt": False,
-            "separator": ":",
-            "format": 0,
-            "hashtypeId": 0,
-            "accessGroupId": 1,
-            "data": "YWFhCmFiYwphY2FkZW1pYQphY2FkZW1pYwphY2Nlc3MKYWRhCmFkbWluCmFkcmlhbgphZHJpYW5uYQphZXJvYmljcwphaXJwbGFuZQphbGJhbnk=",
-            "useBrain": False,
-            "brainFeatures": 0,
-            "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
-        },
-        {
-            "section": "task",
-            "request": "createTask",
-            "name": "API Task",
-            "hashlistId": 12, # Replace this with the actual hashlistId
-            "attackCmd": "#HL# -a 0 -r OneRuleToRuleThemStill.rule common_passwords_win.txt",
-            "chunksize": 600,
-            "statusTimer": 5,
-            "benchmarkType": "speed",
-            "color": "FF4AAB",
-            "isCpuOnly": True,
-            "isSmall": True,
-            "skip": 0,
-            "crackerVersionId": 1,
-            "files": [
-            30, # Replace this with the actual fileId for the rulelist
-            31  # Replace this with the actual fileId for the wordlist
-            ],
-            "priority": 1,
-            "maxAgents": 1,
-            "preprocessorId": 0,
-            "preprocessorCommand": "",
-            "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
-        },
-        {
+    
+    def assign_agent(agentId, taskId):
+        api_data = {
             "section": "task",
             "request": "taskAssignAgent",
-            "agentId": 6,
-            "taskId": 17,  # Replace this with the actual taskId
-            "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
-        },
-        {
-            "section": "task",
-            "request": "getTask",
-            "taskId": 17,   # Replace this with the actual taskId
-            "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
-        },
-       {
-            "section": "task",
-            "request": "getCracked",
-            "taskId": 17,   # Replace this with the actual taskId
+            "agentId": agentId,
+            "taskId": taskId,
             "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
         }
-        # Add the rest of your API calls here...
-    ]
 
-    add_file(file_data_1);
-    add_file(file_data_2);
+        return make_api_call(api_data)
+    
+    def get_task(taskId):
+        api_data = {
+            "section": "task",
+            "request": "getTask",
+            "taskId": taskId,
+            "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
+        }
+
+        return make_api_call(api_data)
+    
+    def get_cracked(taskId):
+        api_data = {
+            "section": "task",
+            "request": "getCracked",
+            "taskId": taskId,
+            "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
+        }
+
+        return make_api_call(api_data)
+    
+    def get_plain_text_passwords(cracked):
+        passwords = []
+        for item in cracked['cracked']:
+            password = item['plain']
+            passwords.append(password)
+        return passwords
+    
+
+    add_file(file_data_1)
+    add_file(file_data_2)
     print("FILES ADDED")
-    files = list_files();
+    files = list_files()
     print("FILES LISTED: ")
     print(files)
-    hashlistId = create_hashlist();
+    hashlistId = create_hashlist()
     print("HASHLIST CREATED")
     print(hashlistId)
-    taskData = create_task_data(files, hashlistId);
+    taskData = create_task_data(files, hashlistId)
     print("TASK DATA CREATED")
     print(taskData)
-    taskId = create_task(taskData);
+    taskId = create_task(taskData)
     print("TASK CREATED")
     print(taskId)
+    agent = assign_agent(9,taskId)
+    print("AGENT ASSIGNED")
+    print(agent)
+    
+    while get_task(taskId).get('isComplete') != True:
+        getTask = get_task(taskId)
+        print("TASK DETAILS")
+        print(getTask)
+        time.sleep(5)
+        
+    cracked = get_cracked(taskId)
+    print("CRACKED")
+    print(cracked)
+    
+    plain_text_passwords = get_plain_text_passwords(cracked)
 
-    return "All API calls completed."
+    return plain_text_passwords
