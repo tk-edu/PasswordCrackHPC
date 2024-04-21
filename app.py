@@ -1,13 +1,12 @@
 import re
 import time
+import requests
 from langchain_community.chat_models import ChatOllama
 from langchain.prompts import ChatPromptTemplate
 from langchain.schema import StrOutputParser
 from langchain.schema.runnable import Runnable
 from langchain.schema.runnable.config import RunnableConfig
-
 import chainlit as cl
-import requests
 
 file_data_1 = {
     "section": "file",
@@ -18,7 +17,7 @@ file_data_1 = {
     "accessGroupId": 1,
     "data": "https://github.com/kkrypt0nn/wordlists/blob/main/wordlists/passwords/common_passwords_win.txt",
     "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
-    }
+}
 
 file_data_2 = {
     "section": "file",
@@ -33,7 +32,6 @@ file_data_2 = {
 
 @cl.on_chat_start
 async def on_chat_start():
-    # Change model here
     model = ChatOllama(model="mistral:latest")
     prompt = ChatPromptTemplate.from_messages(
         [
@@ -50,13 +48,11 @@ async def on_chat_start():
 
 @cl.on_message
 async def on_message(message: cl.Message):
-    runnable = cl.user_session.get("runnable")  # type: Runnable
+    runnable = cl.user_session.get("runnable")
 
     msg = cl.Message(content="")
 
-    # Check if the user wants to make an API call
     if re.search(r"make an api call", message.content, re.IGNORECASE):
-        # Call the function to make the API calls and return the result
         api_result = make_api_calls()
         await msg.stream_token(f"API Result: {api_result}\n")
     else:
@@ -69,9 +65,8 @@ async def on_message(message: cl.Message):
         await msg.send()
 
 def make_api_calls():
-
     def make_api_call(api_data):
-        url = "http://localhost:8080/api/user.php"  # Replace this with your actual API endpoint
+        url = "http://localhost:8080/api/user.php"
         headers = {"Content-Type": "application/json"}
 
         response = requests.post(url, json=api_data, headers=headers)
@@ -79,13 +74,10 @@ def make_api_calls():
         if response.status_code == 200:
             print("API call successful!")
             print("Response:", response.json())
-
             return response.json()
-
         else:
             print("API call failed with status code:", response.status_code)
             print("Response:", response.text)
-
 
     def create_hashlist():
         api_data = {
@@ -103,10 +95,8 @@ def make_api_calls():
             "useBrain": False,
             "brainFeatures": 0,
             "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
-            }
-
-        hashlistId = make_api_call(api_data)
-        return hashlistId
+        }
+        return make_api_call(api_data)
 
     def add_file(api_data):
         return make_api_call(api_data)
@@ -117,18 +107,11 @@ def make_api_calls():
             "request": "listFiles",
             "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
         }
-
-        files = make_api_call(api_data)
-
-        return files
+        return make_api_call(api_data)
 
     def create_task_data(files, hashlistId):
-        file_list = []
-        for file in files['files']:
-            file_list.append(file['fileId'])
-            
+        file_list = [file['fileId'] for file in files['files']]
         hashlistId = hashlistId.get('hashlistId')
-
         return {
             "section": "task",
             "request": "createTask",
@@ -153,9 +136,8 @@ def make_api_calls():
 
     def create_task(api_data):
         taskId = make_api_call(api_data)
-        taskId = taskId.get('taskId')
-        return taskId
-    
+        return taskId.get('taskId')
+
     def assign_agent(agentId, taskId):
         api_data = {
             "section": "task",
@@ -164,9 +146,8 @@ def make_api_calls():
             "taskId": taskId,
             "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
         }
-
         return make_api_call(api_data)
-    
+
     def get_task(taskId):
         api_data = {
             "section": "task",
@@ -174,9 +155,8 @@ def make_api_calls():
             "taskId": taskId,
             "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
         }
-
         return make_api_call(api_data)
-    
+
     def get_cracked(taskId):
         api_data = {
             "section": "task",
@@ -184,59 +164,53 @@ def make_api_calls():
             "taskId": taskId,
             "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
         }
-
         return make_api_call(api_data)
-    
+
     def get_plain_text_passwords(cracked):
-        passwords = []
-        for item in cracked['cracked']:
-            password = item['plain']
-            passwords.append(password)
-        return passwords
-    
+        return [item['plain'] for item in cracked['cracked']]
 
     # Add files
     add_file(file_data_1)
     add_file(file_data_2)
     print("FILES ADDED")
-    
+
     # List files
     files = list_files()
     print("FILES LISTED: ")
     print(files)
-    
+
     # Create hashlist
     hashlistId = create_hashlist()
     print("HASHLIST CREATED")
     print(hashlistId)
-    
+
     # Create task data
     taskData = create_task_data(files, hashlistId)
     print("TASK DATA CREATED")
     print(taskData)
-    
+
     # Create task
     taskId = create_task(taskData)
     print("TASK CREATED")
     print(taskId)
-    
+
     # Assign agent
-    agent = assign_agent(9,taskId)
+    agent = assign_agent(9, taskId)
     print("AGENT ASSIGNED")
     print(agent)
-    
+
     # Check task status
-    while get_task(taskId).get('isComplete') != True:
+    while not get_task(taskId).get('isComplete'):
         getTask = get_task(taskId)
         print("TASK DETAILS")
         print(getTask)
         time.sleep(5)
-        
+
     # Get cracked passwords
     cracked = get_cracked(taskId)
     print("CRACKED")
     print(cracked)
-    
+
     # Get plain text passwords
     plain_text_passwords = get_plain_text_passwords(cracked)
 
