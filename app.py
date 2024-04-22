@@ -1,6 +1,8 @@
 import re
 import time
+import base64
 import requests
+import validators
 from langchain_community.chat_models import ChatOllama
 from langchain.prompts import ChatPromptTemplate
 from langchain.schema import StrOutputParser
@@ -55,6 +57,23 @@ async def on_message(message: cl.Message):
     if re.search(r"make an api call", message.content, re.IGNORECASE):
         api_result = make_all_calls()
         await msg.stream_token(f"API Result: {api_result}\n")
+    elif re.search(r"hash\s*list:?", message.content, re.IGNORECASE):
+        # Check if the user attached a file
+        if len(message.elements) > 0:
+            with open(message.elements[0].path, "r") as file:
+                hashlist = file.read().strip()
+        # Assume the hashlist is in the message
+        else:
+            # Assume that the hashlist is
+            # after the first colon
+            hashlist = message.content.split(":", 1)[1].strip()
+            # If a URL is provided, get the
+            # hashlist from there
+            if validators.url(hashlist):
+                print("Got hashlist from remote source")
+                hashlist = requests.get(hashlist).text.strip()
+        api_result = make_all_calls(hashlist=hashlist)
+        await msg.stream_token(f"API Result: {api_result}\n")
     else:
         async for chunk in runnable.astream(
             {"question": message.content},
@@ -64,7 +83,7 @@ async def on_message(message: cl.Message):
 
         await msg.send()
 
-def make_all_calls():
+def make_all_calls(*, hashlist=None, wordlist=None, rulelist=None):
     def make_api_call(api_data):
         url = "http://localhost:8080/api/user.php"
         headers = {"Content-Type": "application/json"}
@@ -79,7 +98,7 @@ def make_all_calls():
             print("API call failed with status code:", response.status_code)
             print("Response:", response.text)
 
-    def create_hashlist():
+    def create_hashlist(hashlist):
         api_data = {
             "section": "hashlist",
             "request": "createHashlist",
@@ -91,7 +110,7 @@ def make_all_calls():
             "format": 0,
             "hashtypeId": 0,
             "accessGroupId": 1,
-            "data": "NDdiY2U1Yzc0ZjU4OWY0ODY3ZGJkNTdlOWNhOWY4MDgKOTAwMTUwOTgzY2QyNGZiMGQ2OTYzZjdkMjhlMTdmNzIKMjExMDBlOWU2MDQwMGI5NzA0NDE5NDU5ZWMyYmFiZmQKOGRhNmY1ZTVlODAzZGFmZTcyY2FiZmRkOGFkYjQ3NmYKOWRmM2IwMWM2MGRmMjBkMTM4NDM4NDFmZjBkNDQ4MmMKOGM4ZDM1N2I1ZTg3MmJiYWNkNDUxOTc2MjZiZDU3NTkKMjEyMzJmMjk3YTU3YTVhNzQzODk0YTBlNGE4MDFmYzMKOGM0MjA1ZWMzM2Q4ZjZjYWVhYWFhMGMxMGExNDEzOGMKNGY3OWQxYWYxY2IzMjBhNmNiNjljZGIyN2MyMjc1OGMKYTAwM2NjMGJlNWM5MmQxZjU4YWQzNzYxYzBhYmIyMTIKNDVlYTM3YThiMDM0ZWNlNGQwODYzOWQxOGQ5MTNhZDAKZTEyMmYyNzA3ZmFlNWI3ODMzMzA5YmRiNjI0ODNhYjk=",
+            "data": base64.b64encode(hashlist), # "NDdiY2U1Yzc0ZjU4OWY0ODY3ZGJkNTdlOWNhOWY4MDgKOTAwMTUwOTgzY2QyNGZiMGQ2OTYzZjdkMjhlMTdmNzIKMjExMDBlOWU2MDQwMGI5NzA0NDE5NDU5ZWMyYmFiZmQKOGRhNmY1ZTVlODAzZGFmZTcyY2FiZmRkOGFkYjQ3NmYKOWRmM2IwMWM2MGRmMjBkMTM4NDM4NDFmZjBkNDQ4MmMKOGM4ZDM1N2I1ZTg3MmJiYWNkNDUxOTc2MjZiZDU3NTkKMjEyMzJmMjk3YTU3YTVhNzQzODk0YTBlNGE4MDFmYzMKOGM0MjA1ZWMzM2Q4ZjZjYWVhYWFhMGMxMGExNDEzOGMKNGY3OWQxYWYxY2IzMjBhNmNiNjljZGIyN2MyMjc1OGMKYTAwM2NjMGJlNWM5MmQxZjU4YWQzNzYxYzBhYmIyMTIKNDVlYTM3YThiMDM0ZWNlNGQwODYzOWQxOGQ5MTNhZDAKZTEyMmYyNzA3ZmFlNWI3ODMzMzA5YmRiNjI0ODNhYjk=",
             "useBrain": False,
             "brainFeatures": 0,
             "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
@@ -180,7 +199,7 @@ def make_all_calls():
     print(files)
 
     # Create hashlist
-    hashlistId = create_hashlist()
+    hashlistId = create_hashlist(hashlist)
     print("HASHLIST CREATED")
     print(hashlistId)
 
