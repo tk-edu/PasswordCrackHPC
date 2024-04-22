@@ -37,7 +37,7 @@ async def on_chat_start():
         [
             (
                 "system",
-                "Ask the user if they want to make an API call. Male your answer as short as possible.",
+                "Ask the user if they want to make an API call. Make your answer as short as possible.",
             ),
             ("human", "{question}"),
         ]
