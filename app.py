@@ -110,7 +110,7 @@ def make_all_calls(*, hashlist=None, wordlist=None, rulelist=None):
             "format": 0,
             "hashtypeId": 0,
             "accessGroupId": 1,
-            "data": base64.b64encode(hashlist), # "NDdiY2U1Yzc0ZjU4OWY0ODY3ZGJkNTdlOWNhOWY4MDgKOTAwMTUwOTgzY2QyNGZiMGQ2OTYzZjdkMjhlMTdmNzIKMjExMDBlOWU2MDQwMGI5NzA0NDE5NDU5ZWMyYmFiZmQKOGRhNmY1ZTVlODAzZGFmZTcyY2FiZmRkOGFkYjQ3NmYKOWRmM2IwMWM2MGRmMjBkMTM4NDM4NDFmZjBkNDQ4MmMKOGM4ZDM1N2I1ZTg3MmJiYWNkNDUxOTc2MjZiZDU3NTkKMjEyMzJmMjk3YTU3YTVhNzQzODk0YTBlNGE4MDFmYzMKOGM0MjA1ZWMzM2Q4ZjZjYWVhYWFhMGMxMGExNDEzOGMKNGY3OWQxYWYxY2IzMjBhNmNiNjljZGIyN2MyMjc1OGMKYTAwM2NjMGJlNWM5MmQxZjU4YWQzNzYxYzBhYmIyMTIKNDVlYTM3YThiMDM0ZWNlNGQwODYzOWQxOGQ5MTNhZDAKZTEyMmYyNzA3ZmFlNWI3ODMzMzA5YmRiNjI0ODNhYjk=",
+            "data": base64.b64encode(hashlist.encode()).decode(),
             "useBrain": False,
             "brainFeatures": 0,
             "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
@@ -198,6 +198,9 @@ def make_all_calls(*, hashlist=None, wordlist=None, rulelist=None):
     print("FILES LISTED: ")
     print(files)
 
+    print("HASHLIST: ")
+    print(hashlist)
+    print(base64.b64encode(hashlist.encode()).decode())
     # Create hashlist
     hashlistId = create_hashlist(hashlist)
     print("HASHLIST CREATED")
