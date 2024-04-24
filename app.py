@@ -10,27 +10,6 @@ from langchain.schema.runnable import Runnable
 from langchain.schema.runnable.config import RunnableConfig
 import chainlit as cl
 
-file_data_1 = {
-    "section": "file",
-    "request": "addFile",
-    "filename": "doesnt-matter1.txt",
-    "fileType": 0,
-    "source": "url",
-    "accessGroupId": 1,
-    "data": "https://github.com/kkrypt0nn/wordlists/blob/main/wordlists/passwords/common_passwords_win.txt",
-    "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
-}
-
-file_data_2 = {
-    "section": "file",
-    "request": "addFile",
-    "filename": "doesnt-matter1.txt",
-    "fileType": 1,
-    "source": "url",
-    "accessGroupId": 1,
-    "data": "https://github.com/stealthsploit/OneRuleToRuleThemStill/blob/main/OneRuleToRuleThemStill.rule",
-    "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
-}
 
 @cl.on_chat_start
 async def on_chat_start():
@@ -50,15 +29,33 @@ async def on_chat_start():
 
 @cl.on_message
 async def on_message(message: cl.Message):
+    
+    global hashlist, wordlist, rulelist
+    
     runnable = cl.user_session.get("runnable")
 
     msg = cl.Message(content="")
 
     if re.search(r"make an api call", message.content, re.IGNORECASE):
-        api_result = make_all_calls()
-        await msg.stream_token(f"API Result: {api_result}\n")
+        print("HASHLIST: ")
+        print(hashlist)
+        print("WORDLIST: ")
+        print(wordlist)
+        print("RULELIST: ")
+        print (rulelist)
+        if hashlist is not None and wordlist is not None and rulelist is not None:
+            api_result = make_all_calls(hashlist=hashlist, wordlist=wordlist, rulelist=rulelist)
+            await msg.stream_token(f"API Result: {api_result}\n")
+        elif hashlist is None or wordlist is None or rulelist is None:
+            await msg.stream_token(f"You have provided the following:\n")
+            # if hashlist:
+            #     await msg.stream_token(f"A Hashlist \n")
+            # if wordlist:
+            #     await msg.stream_token(f"A Wordlist\n")
+            # if rulelist:
+            #     await msg.stream_token(f"A Rulelist\n")
         
-    elif re.search(r"hash\s*list:?", message.content, re.IGNORECASE):
+    if re.search(r"hash\s*list:?", message.content, re.IGNORECASE):
         # Check if the user attached a file
         if len(message.elements) > 0:
             with open(message.elements[0].path, "r") as file:
@@ -73,8 +70,8 @@ async def on_message(message: cl.Message):
             if validators.url(hashlist):
                 print("Got hashlist from remote source")
                 hashlist = requests.get(hashlist).text.strip()
-        api_result = make_all_calls(hashlist=hashlist)
-        await msg.stream_token(f"API Result: {api_result}\n")
+        # api_result = make_all_calls(hashlist=hashlist)
+        # await msg.stream_token(f"API Result: {api_result}\n")
         
     elif re.search(r"word\s*list:?", message.content, re.IGNORECASE):
         # Check if the user attached a file
@@ -91,8 +88,8 @@ async def on_message(message: cl.Message):
             if validators.url(wordlist):
                 print("Got wordlist from remote source")
                 wordlist = requests.get(wordlist).text.strip()
-        api_result = make_all_calls(wordlist=wordlist)
-        await msg.stream_token(f"API Result: {api_result}\n")
+        # api_result = make_all_calls(wordlist=wordlist)
+        # await msg.stream_token(f"API Result: {api_result}\n")
         
     elif re.search(r"rule\s*list:?", message.content, re.IGNORECASE):
         # Check if the user attached a file
@@ -109,8 +106,9 @@ async def on_message(message: cl.Message):
             if validators.url(rulelist):
                 print("Got rulelist from remote source")
                 rulelist = requests.get(rulelist).text.strip()
-        api_result = make_all_calls(rulelist=rulelist)
-        await msg.stream_token(f"API Result: {api_result}\n")
+        # api_result = make_all_calls(rulelist=rulelist)
+        # await msg.stream_token(f"API Result: {api_result}\n")
+        
     else:
         async for chunk in runnable.astream(
             {"question": message.content},
