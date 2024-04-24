@@ -14,6 +14,7 @@ import chainlit as cl
 @cl.on_chat_start
 async def on_chat_start():
     model = ChatOllama(model="mistral:latest")
+    
     prompt = ChatPromptTemplate.from_messages(
         [
             (
@@ -97,8 +98,8 @@ async def on_message(message: cl.Message):
             if validators.url(rulelist):
                 print("Got rulelist from remote source")
                 rulelist = requests.get(rulelist).text.strip()
+        
     else:
-        print("Fuck me up")
         async for chunk in runnable.astream(
             {"question": message.content},
             config=RunnableConfig(callbacks=[cl.LangchainCallbackHandler()]),
@@ -136,19 +137,6 @@ def make_all_calls(*, hashlist=None, wordlist=None, rulelist=None):
             "data": base64.b64encode(hashlist.encode()).decode(),
             "useBrain": False,
             "brainFeatures": 0,
-            "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
-        }
-        return make_api_call(api_data)
-
-    def add_file_url(api_data):
-        api_data = {
-            "section": "file",
-            "request": "addFile",
-            "filename": "doesnt-matter1.txt",
-            "fileType": 0,
-            "source": "url",
-            "accessGroupId": 1,
-            "data": "https://github.com/kkrypt0nn/wordlists/blob/main/wordlists/passwords/common_passwords_win.txt",
             "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
         }
         return make_api_call(api_data)
