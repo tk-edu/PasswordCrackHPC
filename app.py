@@ -57,6 +57,7 @@ async def on_message(message: cl.Message):
     if re.search(r"make an api call", message.content, re.IGNORECASE):
         api_result = make_all_calls()
         await msg.stream_token(f"API Result: {api_result}\n")
+        
     elif re.search(r"hash\s*list:?", message.content, re.IGNORECASE):
         # Check if the user attached a file
         if len(message.elements) > 0:
@@ -73,6 +74,42 @@ async def on_message(message: cl.Message):
                 print("Got hashlist from remote source")
                 hashlist = requests.get(hashlist).text.strip()
         api_result = make_all_calls(hashlist=hashlist)
+        await msg.stream_token(f"API Result: {api_result}\n")
+        
+    elif re.search(r"word\s*list:?", message.content, re.IGNORECASE):
+        # Check if the user attached a file
+        if len(message.elements) > 0:
+            with open(message.elements[0].path, "r") as file:
+                wordlist = file.read().strip()
+        # Assume the wordlist is in the message
+        else:
+            # Assume that the wordlist is
+            # after the first colon
+            wordlist = message.content.split(":", 1)[1].strip()
+            # If a URL is provided, get the
+            # wordlist from there
+            if validators.url(wordlist):
+                print("Got wordlist from remote source")
+                wordlist = requests.get(wordlist).text.strip()
+        api_result = make_all_calls(wordlist=wordlist)
+        await msg.stream_token(f"API Result: {api_result}\n")
+        
+    elif re.search(r"rule\s*list:?", message.content, re.IGNORECASE):
+        # Check if the user attached a file
+        if len(message.elements) > 0:
+            with open(message.elements[0].path, "r") as file:
+                rulelist = file.read().strip()
+        # Assume the rulelist is in the message
+        else:
+            # Assume that the rulelist is
+            # after the first colon
+            rulelist = message.content.split(":", 1)[1].strip()
+            # If a URL is provided, get the
+            # rulelist from there
+            if validators.url(rulelist):
+                print("Got rulelist from remote source")
+                rulelist = requests.get(rulelist).text.strip()
+        api_result = make_all_calls(rulelist=rulelist)
         await msg.stream_token(f"API Result: {api_result}\n")
     else:
         async for chunk in runnable.astream(
@@ -117,7 +154,30 @@ def make_all_calls(*, hashlist=None, wordlist=None, rulelist=None):
         }
         return make_api_call(api_data)
 
-    def add_file(api_data):
+    def add_file_url(api_data):
+        api_data = {
+            "section": "file",
+            "request": "addFile",
+            "filename": "doesnt-matter1.txt",
+            "fileType": 0,
+            "source": "url",
+            "accessGroupId": 1,
+            "data": "https://github.com/kkrypt0nn/wordlists/blob/main/wordlists/passwords/common_passwords_win.txt",
+            "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
+        }
+        return make_api_call(api_data)
+    
+    def add_file_inline(thelist, list_name, list_type):
+        api_data = {
+            "section": "file",
+            "request": "addFile",
+            "filename": list_name,
+            "fileType": list_type,
+            "source": "inline",
+            "accessGroupId": 1,
+            "data": base64.b64encode(thelist.encode()).decode(),
+            "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
+        }
         return make_api_call(api_data)
 
     def list_files():
@@ -189,8 +249,12 @@ def make_all_calls(*, hashlist=None, wordlist=None, rulelist=None):
         return [item['plain'] for item in cracked['cracked']]
 
     # Add files
-    add_file(file_data_1)
-    add_file(file_data_2)
+    print("WORDLIST: ")
+    print(wordlist)
+    print("RULELIST: ")
+    print(rulelist)
+    add_file_inline(wordlist, "api_wordlist.txt", 0)
+    add_file_inline(rulelist, "api_rulelist.txt", 1)
     print("FILES ADDED")
 
     # List files
@@ -200,7 +264,6 @@ def make_all_calls(*, hashlist=None, wordlist=None, rulelist=None):
 
     print("HASHLIST: ")
     print(hashlist)
-    print(base64.b64encode(hashlist.encode()).decode())
     # Create hashlist
     hashlistId = create_hashlist(hashlist)
     print("HASHLIST CREATED")
