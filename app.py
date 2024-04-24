@@ -27,6 +27,14 @@ async def on_chat_start():
 
     runnable = prompt | model | StrOutputParser()
     cl.user_session.set("runnable", runnable)
+    
+    ##initial message to ask user to provide hashlist, wordlist and rulelist. Set up like instructions and formatted nicely
+    initial_message = cl.Message(content="To crack your passwords, please provide the following lists via URL or file upload:\n")
+    await initial_message.stream_token(f"1. Hashlist: Provide a list of hashes\n")
+    await initial_message.stream_token(f"2. Wordlist: Provide a list of words\n")
+    await initial_message.stream_token(f"3. Rulelist: Provide a list of rules\n\n")
+    await initial_message.stream_token(f"Once you have provided all three lists, type 'Start cracking' to begin the cracking process\n")
+    await initial_message.send()
 
 @cl.on_message
 async def on_message(message: cl.Message):
@@ -37,10 +45,12 @@ async def on_message(message: cl.Message):
 
     msg = cl.Message(content="")
 
-    if re.search(r"make an api call", message.content, re.IGNORECASE):
+    if re.search(r"Start cracking", message.content, re.IGNORECASE):
         if 'hashlist' in globals() and 'wordlist' in globals() and 'rulelist' in globals():
             api_result = make_all_calls(hashlist=hashlist, wordlist=wordlist, rulelist=rulelist)
-            await msg.stream_token(f"API Result: {api_result}\n")
+            await msg.stream_token(f"Here are the cracked hashes that were found:\n")
+            for password in api_result:
+                await msg.stream_token(f"{password}\n")
         else:
             await msg.stream_token(f"You have provided the following:\n")
             if 'hashlist' in globals():
@@ -220,7 +230,7 @@ def make_all_calls(*, hashlist=None, wordlist=None, rulelist=None):
         return make_api_call(api_data)
 
     def get_plain_text_passwords(cracked):
-        return [item['plain'] for item in cracked['cracked']]
+        return [f"{item['hash']}:{item['plain']}" for item in cracked['cracked']]
 
     # Add files
     print("WORDLIST: ")
