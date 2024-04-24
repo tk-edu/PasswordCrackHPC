@@ -37,25 +37,20 @@ async def on_message(message: cl.Message):
     msg = cl.Message(content="")
 
     if re.search(r"make an api call", message.content, re.IGNORECASE):
-        print("HASHLIST: ")
-        print(hashlist)
-        print("WORDLIST: ")
-        print(wordlist)
-        print("RULELIST: ")
-        print (rulelist)
-        if hashlist is not None and wordlist is not None and rulelist is not None:
+        if 'hashlist' in globals() and 'wordlist' in globals() and 'rulelist' in globals():
             api_result = make_all_calls(hashlist=hashlist, wordlist=wordlist, rulelist=rulelist)
             await msg.stream_token(f"API Result: {api_result}\n")
-        elif hashlist is None or wordlist is None or rulelist is None:
+        else:
             await msg.stream_token(f"You have provided the following:\n")
-            # if hashlist:
-            #     await msg.stream_token(f"A Hashlist \n")
-            # if wordlist:
-            #     await msg.stream_token(f"A Wordlist\n")
-            # if rulelist:
-            #     await msg.stream_token(f"A Rulelist\n")
-        
-    if re.search(r"hash\s*list:?", message.content, re.IGNORECASE):
+            if 'hashlist' in globals():
+                await msg.stream_token(f"A Hashlist \n")
+            if 'wordlist' in globals():
+                await msg.stream_token(f"A Wordlist\n")
+            if 'rulelist' in globals():
+                await msg.stream_token(f"A Rulelist\n")
+            await msg.stream_token(f"Please provide all three lists to make an API call\n")
+            
+    elif re.search(r"hash\s*list:?", message.content, re.IGNORECASE):
         # Check if the user attached a file
         if len(message.elements) > 0:
             with open(message.elements[0].path, "r") as file:
@@ -70,8 +65,6 @@ async def on_message(message: cl.Message):
             if validators.url(hashlist):
                 print("Got hashlist from remote source")
                 hashlist = requests.get(hashlist).text.strip()
-        # api_result = make_all_calls(hashlist=hashlist)
-        # await msg.stream_token(f"API Result: {api_result}\n")
         
     elif re.search(r"word\s*list:?", message.content, re.IGNORECASE):
         # Check if the user attached a file
@@ -88,8 +81,6 @@ async def on_message(message: cl.Message):
             if validators.url(wordlist):
                 print("Got wordlist from remote source")
                 wordlist = requests.get(wordlist).text.strip()
-        # api_result = make_all_calls(wordlist=wordlist)
-        # await msg.stream_token(f"API Result: {api_result}\n")
         
     elif re.search(r"rule\s*list:?", message.content, re.IGNORECASE):
         # Check if the user attached a file
@@ -106,16 +97,13 @@ async def on_message(message: cl.Message):
             if validators.url(rulelist):
                 print("Got rulelist from remote source")
                 rulelist = requests.get(rulelist).text.strip()
-        # api_result = make_all_calls(rulelist=rulelist)
-        # await msg.stream_token(f"API Result: {api_result}\n")
-        
     else:
+        print("Fuck me up")
         async for chunk in runnable.astream(
             {"question": message.content},
             config=RunnableConfig(callbacks=[cl.LangchainCallbackHandler()]),
         ):
             await msg.stream_token(chunk)
-
         await msg.send()
 
 def make_all_calls(*, hashlist=None, wordlist=None, rulelist=None):
