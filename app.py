@@ -76,16 +76,22 @@ async def on_message(message: cl.Message):
         else:
             await msg.stream_token(f"You have provided the following:\n")
             if 'hashlist' in globals():
-                await msg.stream_token(f"A Hashlist\n")
+                await msg.stream_token(f"A Hashlist \n")
             if 'wordlist' in globals():
                 await msg.stream_token(f"A Wordlist\n")
             if 'rulelist' in globals():
                 await msg.stream_token(f"A Rulelist\n")
             await msg.stream_token(f"Please provide all three lists to start cracking\n")
 
-    elif re.search(r"(hash|word|rule)\s*list:?", message.content, re.IGNORECASE):
+    elif re.search(r"hash\s*list:?", message.content, re.IGNORECASE):
         hashlist = get_list_from_message(message)
-
+            
+    elif re.search(r"word\s*list:?", message.content, re.IGNORECASE):
+        wordlist = get_list_from_message(message)
+            
+    elif re.search(r"rule\s*list:?", message.content, re.IGNORECASE):
+        rulelist = get_list_from_message(message)
+        
     else:
         async for chunk in runnable.astream(
             {"question": message.content},
