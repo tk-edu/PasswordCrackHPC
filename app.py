@@ -78,7 +78,7 @@ async def on_message(message: cl.Message):
                 await msg.stream_token(f"A Wordlist\n")
             if 'rulelist' in globals():
                 await msg.stream_token(f"A Rulelist\n")
-            await msg.stream_token(f"Please provide all three lists to make an API call\n")
+            await msg.stream_token(f"Please provide all three lists to start cracking\n")
             
     elif re.search(r"hash\s*list:?", message.content, re.IGNORECASE):
         hashlist = get_list_from_message(message)
@@ -99,7 +99,7 @@ async def on_message(message: cl.Message):
 
 def make_all_calls():
     def make_api_call(api_data):
-        url = "http://localhost:8080/api/user.php"
+        url = os.environ.get("HASHTOPOLIS_API_URL")
         headers = {"Content-Type": "application/json"}
 
         response = requests.post(url, json=api_data, headers=headers)
