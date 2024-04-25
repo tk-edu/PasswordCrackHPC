@@ -9,6 +9,7 @@ from langchain.schema import StrOutputParser
 from langchain.schema.runnable import Runnable
 from langchain.schema.runnable.config import RunnableConfig
 import chainlit as cl
+import os
 
 
 @cl.on_chat_start
@@ -19,7 +20,7 @@ async def on_chat_start():
         [
             (
                 "system",
-                "Ask the user if they want to make an API call. Make your answer as short as possible.",
+                "You are a cybersecurity expert who knows everything about password cracking with hashcat. Make your answer as short as possible.",
             ),
             ("human", "{question}"),
         ]
@@ -29,11 +30,14 @@ async def on_chat_start():
     cl.user_session.set("runnable", runnable)
     
     ##initial message to ask user to provide hashlist, wordlist and rulelist. Set up like instructions and formatted nicely
-    initial_message = cl.Message(content="To crack your passwords, please provide the following lists via URL or file upload:\n")
-    await initial_message.stream_token(f"1. Hashlist: Provide a list of hashes\n")
-    await initial_message.stream_token(f"2. Wordlist: Provide a list of words\n")
-    await initial_message.stream_token(f"3. Rulelist: Provide a list of rules\n\n")
-    await initial_message.stream_token(f"Once you have provided all three lists, type 'Start cracking' to begin the cracking process\n")
+    initial_message = cl.Message(content="")
+    await initial_message.stream_token(
+        f"To crack your passwords, please provide the following lists via URL or file upload:\n"
+        f"1. Hashlist: Provide a list of hashes\n"
+        f"2. Wordlist: Provide a list of words\n"
+        f"3. Rulelist: Provide a list of rules\n\n"
+        f"Once you have provided all three lists, type 'Start cracking' to begin the cracking process\n"
+    )
     await initial_message.send()
 
 @cl.on_message
@@ -44,71 +48,44 @@ async def on_message(message: cl.Message):
     runnable = cl.user_session.get("runnable")
 
     msg = cl.Message(content="")
+    
+    def get_list_from_message(message):
+    # Check if the user attached a file
+        if len(message.elements) > 0:
+            with open(message.elements[0].path, "r") as file:
+                the_list = file.read().strip()
+        # Assume the list is in the message
+        else:
+            # Assume that the list is
+            # after the first colon
+            the_list = message.content.split(":", 1)[1].strip()
+            # If a URL is provided, get the
+            # list from there
+            if validators.url(the_list):
+                print(f"Got {the_list} from remote source")
+                the_list = requests.get(the_list).text.strip()
+        return the_list
+    
 
     if re.search(r"Start cracking", message.content, re.IGNORECASE):
         if 'hashlist' in globals() and 'wordlist' in globals() and 'rulelist' in globals():
-            api_result = make_all_calls(hashlist=hashlist, wordlist=wordlist, rulelist=rulelist)
-            await msg.stream_token(f"Here are the cracked hashes that were found:\n")
+            api_result = make_all_calls()
+            await msg.stream_token(f"Here are the cracked hashes that were found:\n\n")
             for password in api_result:
                 await msg.stream_token(f"{password}\n")
         else:
             await msg.stream_token(f"You have provided the following:\n")
             if 'hashlist' in globals():
-                await msg.stream_token(f"A Hashlist \n")
+                await msg.stream_token(f"A Hashlist\n")
             if 'wordlist' in globals():
                 await msg.stream_token(f"A Wordlist\n")
             if 'rulelist' in globals():
                 await msg.stream_token(f"A Rulelist\n")
-            await msg.stream_token(f"Please provide all three lists to make an API call\n")
-            
-    elif re.search(r"hash\s*list:?", message.content, re.IGNORECASE):
-        # Check if the user attached a file
-        if len(message.elements) > 0:
-            with open(message.elements[0].path, "r") as file:
-                hashlist = file.read().strip()
-        # Assume the hashlist is in the message
-        else:
-            # Assume that the hashlist is
-            # after the first colon
-            hashlist = message.content.split(":", 1)[1].strip()
-            # If a URL is provided, get the
-            # hashlist from there
-            if validators.url(hashlist):
-                print("Got hashlist from remote source")
-                hashlist = requests.get(hashlist).text.strip()
-        
-    elif re.search(r"word\s*list:?", message.content, re.IGNORECASE):
-        # Check if the user attached a file
-        if len(message.elements) > 0:
-            with open(message.elements[0].path, "r") as file:
-                wordlist = file.read().strip()
-        # Assume the wordlist is in the message
-        else:
-            # Assume that the wordlist is
-            # after the first colon
-            wordlist = message.content.split(":", 1)[1].strip()
-            # If a URL is provided, get the
-            # wordlist from there
-            if validators.url(wordlist):
-                print("Got wordlist from remote source")
-                wordlist = requests.get(wordlist).text.strip()
-        
-    elif re.search(r"rule\s*list:?", message.content, re.IGNORECASE):
-        # Check if the user attached a file
-        if len(message.elements) > 0:
-            with open(message.elements[0].path, "r") as file:
-                rulelist = file.read().strip()
-        # Assume the rulelist is in the message
-        else:
-            # Assume that the rulelist is
-            # after the first colon
-            rulelist = message.content.split(":", 1)[1].strip()
-            # If a URL is provided, get the
-            # rulelist from there
-            if validators.url(rulelist):
-                print("Got rulelist from remote source")
-                rulelist = requests.get(rulelist).text.strip()
-        
+            await msg.stream_token(f"Please provide all three lists to start cracking\n")
+
+    elif re.search(r"(hash|word|rule)\s*list:?", message.content, re.IGNORECASE):
+        hashlist = get_list_from_message(message)
+
     else:
         async for chunk in runnable.astream(
             {"question": message.content},
@@ -117,9 +94,9 @@ async def on_message(message: cl.Message):
             await msg.stream_token(chunk)
         await msg.send()
 
-def make_all_calls(*, hashlist=None, wordlist=None, rulelist=None):
+def make_all_calls():
     def make_api_call(api_data):
-        url = "http://localhost:8080/api/user.php"
+        url = os.environ.get("HASHTOPOLIS_API_URL")
         headers = {"Content-Type": "application/json"}
 
         response = requests.post(url, json=api_data, headers=headers)
@@ -147,7 +124,7 @@ def make_all_calls(*, hashlist=None, wordlist=None, rulelist=None):
             "data": base64.b64encode(hashlist.encode()).decode(),
             "useBrain": False,
             "brainFeatures": 0,
-            "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
+            "accessKey": os.environ.get("HASHTOPOLIS_API_KEY")
         }
         return make_api_call(api_data)
     
@@ -160,7 +137,7 @@ def make_all_calls(*, hashlist=None, wordlist=None, rulelist=None):
             "source": "inline",
             "accessGroupId": 1,
             "data": base64.b64encode(thelist.encode()).decode(),
-            "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
+            "accessKey": os.environ.get("HASHTOPOLIS_API_KEY")
         }
         return make_api_call(api_data)
 
@@ -168,11 +145,19 @@ def make_all_calls(*, hashlist=None, wordlist=None, rulelist=None):
         api_data = {
             "section": "file",
             "request": "listFiles",
-            "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
+            "accessKey": os.environ.get("HASHTOPOLIS_API_KEY")
+        }
+        return make_api_call(api_data)
+    
+    def list_agents():
+        api_data = {
+            "section": "agent",
+            "request": "listAgents",
+            "accessKey": os.environ.get("HASHTOPOLIS_API_KEY")
         }
         return make_api_call(api_data)
 
-    def create_task_data(files, hashlistId):
+    def create_task_data(files, hashlistId, max_agents):
         file_list = [file['fileId'] for file in files['files']]
         hashlistId = hashlistId.get('hashlistId')
         return {
@@ -180,21 +165,21 @@ def make_all_calls(*, hashlist=None, wordlist=None, rulelist=None):
             "request": "createTask",
             "name": "API Task",
             "hashlistId": hashlistId,
-            "attackCmd": "#HL# -a 0 -r OneRuleToRuleThemStill.rule common_passwords_win.txt",
-            "chunksize": 600,
+            "attackCmd": "#HL# -a 0 -r api_rulelist.txt api_wordlist.txt",
+            "chunksize": 400,
             "statusTimer": 5,
-            "benchmarkType": "speed",
+            "benchmarkType": "runtime",
             "color": "FF4AAB",
-            "isCpuOnly": True,
-            "isSmall": True,
+            "isCpuOnly": False,
+            "isSmall": False,
             "skip": 0,
             "crackerVersionId": 1,
             "files": file_list,
             "priority": 1,
-            "maxAgents": 1,
+            "maxAgents": max_agents,
             "preprocessorId": 0,
             "preprocessorCommand": "",
-            "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
+            "accessKey": os.environ.get("HASHTOPOLIS_API_KEY")
         }
 
     def create_task(api_data):
@@ -207,7 +192,7 @@ def make_all_calls(*, hashlist=None, wordlist=None, rulelist=None):
             "request": "taskAssignAgent",
             "agentId": agentId,
             "taskId": taskId,
-            "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
+            "accessKey": os.environ.get("HASHTOPOLIS_API_KEY")
         }
         return make_api_call(api_data)
 
@@ -216,7 +201,7 @@ def make_all_calls(*, hashlist=None, wordlist=None, rulelist=None):
             "section": "task",
             "request": "getTask",
             "taskId": taskId,
-            "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
+            "accessKey": os.environ.get("HASHTOPOLIS_API_KEY")
         }
         return make_api_call(api_data)
 
@@ -225,60 +210,57 @@ def make_all_calls(*, hashlist=None, wordlist=None, rulelist=None):
             "section": "task",
             "request": "getCracked",
             "taskId": taskId,
-            "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
+            "accessKey": os.environ.get("HASHTOPOLIS_API_KEY")
         }
         return make_api_call(api_data)
 
     def get_plain_text_passwords(cracked):
         return [f"{item['hash']}:{item['plain']}" for item in cracked['cracked']]
 
+
     # Add files
-    print("WORDLIST: ")
-    print(wordlist)
-    print("RULELIST: ")
-    print(rulelist)
     add_file_inline(wordlist, "api_wordlist.txt", 0)
     add_file_inline(rulelist, "api_rulelist.txt", 1)
     print("FILES ADDED")
 
     # List files
     files = list_files()
-    print("FILES LISTED: ")
-    print(files)
-
-    print("HASHLIST: ")
-    print(hashlist)
+    print("FILES LISTED")
+    
     # Create hashlist
     hashlistId = create_hashlist(hashlist)
     print("HASHLIST CREATED")
-    print(hashlistId)
+    
+    # List agents
+    agents = list_agents()
+    agent_list = [agent['agentId'] for agent in agents['agents']]
+    max_agents = len(agent_list)
+    print("AGENTS LISTED")
+    print (max_agents)
+    print(agents)
 
     # Create task data
-    taskData = create_task_data(files, hashlistId)
+    taskData = create_task_data(files, hashlistId, max_agents)
     print("TASK DATA CREATED")
-    print(taskData)
 
     # Create task
     taskId = create_task(taskData)
     print("TASK CREATED")
-    print(taskId)
 
     # Assign agent
-    agent = assign_agent(9, taskId)
-    print("AGENT ASSIGNED")
-    print(agent)
+    for agent in agent_list:
+        assign_agent(agent, taskId)
+        print("AGENT ASSIGNED")
 
     # Check task status
     while not get_task(taskId).get('isComplete'):
-        getTask = get_task(taskId)
+        get_task(taskId)
         print("TASK DETAILS")
-        print(getTask)
         time.sleep(5)
 
     # Get cracked passwords
     cracked = get_cracked(taskId)
     print("CRACKED")
-    print(cracked)
 
     # Get plain text passwords
     plain_text_passwords = get_plain_text_passwords(cracked)
