@@ -19,7 +19,7 @@ async def on_chat_start():
         [
             (
                 "system",
-                "Ask the user if they want to make an API call. Make your answer as short as possible.",
+                "You are a cybersecurity expert who knows everything about password cracking with hashcat. Make your answer as short as possible.",
             ),
             ("human", "{question}"),
         ]
@@ -47,8 +47,8 @@ async def on_message(message: cl.Message):
 
     if re.search(r"Start cracking", message.content, re.IGNORECASE):
         if 'hashlist' in globals() and 'wordlist' in globals() and 'rulelist' in globals():
-            api_result = make_all_calls(hashlist=hashlist, wordlist=wordlist, rulelist=rulelist)
-            await msg.stream_token(f"Here are the cracked hashes that were found:\n")
+            api_result = make_all_calls()
+            await msg.stream_token(f"Here are the cracked hashes that were found:\n\n")
             for password in api_result:
                 await msg.stream_token(f"{password}\n")
         else:
@@ -117,7 +117,7 @@ async def on_message(message: cl.Message):
             await msg.stream_token(chunk)
         await msg.send()
 
-def make_all_calls(*, hashlist=None, wordlist=None, rulelist=None):
+def make_all_calls():
     def make_api_call(api_data):
         url = "http://localhost:8080/api/user.php"
         headers = {"Content-Type": "application/json"}
