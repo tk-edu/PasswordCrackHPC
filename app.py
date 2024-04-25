@@ -30,11 +30,14 @@ async def on_chat_start():
     cl.user_session.set("runnable", runnable)
     
     ##initial message to ask user to provide hashlist, wordlist and rulelist. Set up like instructions and formatted nicely
-    initial_message = cl.Message(content="To crack your passwords, please provide the following lists via URL or file upload:\n")
-    await initial_message.stream_token(f"1. Hashlist: Provide a list of hashes\n")
-    await initial_message.stream_token(f"2. Wordlist: Provide a list of words\n")
-    await initial_message.stream_token(f"3. Rulelist: Provide a list of rules\n\n")
-    await initial_message.stream_token(f"Once you have provided all three lists, type 'Start cracking' to begin the cracking process\n")
+    initial_message = cl.Message(content="")
+    await initial_message.stream_token(
+        f"To crack your passwords, please provide the following lists via URL or file upload:\n"
+        f"1. Hashlist: Provide a list of hashes\n"
+        f"2. Wordlist: Provide a list of words\n"
+        f"3. Rulelist: Provide a list of rules\n\n"
+        f"Once you have provided all three lists, type 'Start cracking' to begin the cracking process\n"
+    )
     await initial_message.send()
 
 @cl.on_message
@@ -151,8 +154,16 @@ def make_all_calls():
             "accessKey": os.environ.get("HASHTOPOLIS_API_KEY")
         }
         return make_api_call(api_data)
+    
+    def list_agents():
+        api_data = {
+            "section": "agent",
+            "request": "listAgents",
+            "accessKey": os.environ.get("HASHTOPOLIS_API_KEY")
+        }
+        return make_api_call(api_data)
 
-    def create_task_data(files, hashlistId):
+    def create_task_data(files, hashlistId, max_agents):
         file_list = [file['fileId'] for file in files['files']]
         hashlistId = hashlistId.get('hashlistId')
         return {
@@ -161,17 +172,17 @@ def make_all_calls():
             "name": "API Task",
             "hashlistId": hashlistId,
             "attackCmd": "#HL# -a 0 -r api_rulelist.txt api_wordlist.txt",
-            "chunksize": 600,
+            "chunksize": 400,
             "statusTimer": 5,
-            "benchmarkType": "speed",
+            "benchmarkType": "runtime",
             "color": "FF4AAB",
-            "isCpuOnly": True,
-            "isSmall": True,
+            "isCpuOnly": False,
+            "isSmall": False,
             "skip": 0,
             "crackerVersionId": 1,
             "files": file_list,
             "priority": 1,
-            "maxAgents": 1,
+            "maxAgents": max_agents,
             "preprocessorId": 0,
             "preprocessorCommand": "",
             "accessKey": os.environ.get("HASHTOPOLIS_API_KEY")
@@ -221,39 +232,41 @@ def make_all_calls():
     # List files
     files = list_files()
     print("FILES LISTED")
-    print(files)
     
     # Create hashlist
     hashlistId = create_hashlist(hashlist)
     print("HASHLIST CREATED")
-    print(hashlistId)
+    
+    # List agents
+    agents = list_agents()
+    agent_list = [agent['agentId'] for agent in agents['agents']]
+    max_agents = len(agent_list)
+    print("AGENTS LISTED")
+    print (max_agents)
+    print(agents)
 
     # Create task data
-    taskData = create_task_data(files, hashlistId)
+    taskData = create_task_data(files, hashlistId, max_agents)
     print("TASK DATA CREATED")
-    print(taskData)
 
     # Create task
     taskId = create_task(taskData)
     print("TASK CREATED")
-    print(taskId)
 
     # Assign agent
-    agent = assign_agent(11, taskId)
-    print("AGENT ASSIGNED")
-    print(agent)
+    for agent in agent_list:
+        assign_agent(agent, taskId)
+        print("AGENT ASSIGNED")
 
     # Check task status
     while not get_task(taskId).get('isComplete'):
-        getTask = get_task(taskId)
+        get_task(taskId)
         print("TASK DETAILS")
-        print(getTask)
         time.sleep(5)
 
     # Get cracked passwords
     cracked = get_cracked(taskId)
     print("CRACKED")
-    print(cracked)
 
     # Get plain text passwords
     plain_text_passwords = get_plain_text_passwords(cracked)
