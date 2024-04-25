@@ -9,6 +9,7 @@ from langchain.schema import StrOutputParser
 from langchain.schema.runnable import Runnable
 from langchain.schema.runnable.config import RunnableConfig
 import chainlit as cl
+import os
 
 
 @cl.on_chat_start
@@ -126,7 +127,7 @@ def make_all_calls():
             "data": base64.b64encode(hashlist.encode()).decode(),
             "useBrain": False,
             "brainFeatures": 0,
-            "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
+            "accessKey": os.environ.get("HASHTOPOLIS_API_KEY")
         }
         return make_api_call(api_data)
     
@@ -139,7 +140,7 @@ def make_all_calls():
             "source": "inline",
             "accessGroupId": 1,
             "data": base64.b64encode(thelist.encode()).decode(),
-            "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
+            "accessKey": os.environ.get("HASHTOPOLIS_API_KEY")
         }
         return make_api_call(api_data)
 
@@ -147,7 +148,7 @@ def make_all_calls():
         api_data = {
             "section": "file",
             "request": "listFiles",
-            "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
+            "accessKey": os.environ.get("HASHTOPOLIS_API_KEY")
         }
         return make_api_call(api_data)
 
@@ -173,7 +174,7 @@ def make_all_calls():
             "maxAgents": 1,
             "preprocessorId": 0,
             "preprocessorCommand": "",
-            "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
+            "accessKey": os.environ.get("HASHTOPOLIS_API_KEY")
         }
 
     def create_task(api_data):
@@ -186,7 +187,7 @@ def make_all_calls():
             "request": "taskAssignAgent",
             "agentId": agentId,
             "taskId": taskId,
-            "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
+            "accessKey": os.environ.get("HASHTOPOLIS_API_KEY")
         }
         return make_api_call(api_data)
 
@@ -195,7 +196,7 @@ def make_all_calls():
             "section": "task",
             "request": "getTask",
             "taskId": taskId,
-            "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
+            "accessKey": os.environ.get("HASHTOPOLIS_API_KEY")
         }
         return make_api_call(api_data)
 
@@ -204,12 +205,13 @@ def make_all_calls():
             "section": "task",
             "request": "getCracked",
             "taskId": taskId,
-            "accessKey": "am1wGeToLAhrlpWErAtxDzXXGsj8s1"
+            "accessKey": os.environ.get("HASHTOPOLIS_API_KEY")
         }
         return make_api_call(api_data)
 
     def get_plain_text_passwords(cracked):
         return [f"{item['hash']}:{item['plain']}" for item in cracked['cracked']]
+
 
     # Add files
     print("WORDLIST: ")
