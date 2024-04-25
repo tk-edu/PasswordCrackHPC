@@ -79,7 +79,7 @@ async def on_message(message: cl.Message):
             if 'rulelist' in globals():
                 await msg.stream_token(f"A Rulelist\n")
             await msg.stream_token(f"Please provide all three lists to start cracking\n")
-            
+
     elif re.search(r"hash\s*list:?", message.content, re.IGNORECASE):
         hashlist = get_list_from_message(message)
             
@@ -160,7 +160,7 @@ def make_all_calls():
             "request": "createTask",
             "name": "API Task",
             "hashlistId": hashlistId,
-            "attackCmd": "#HL# -a 0 -r OneRuleToRuleThemStill.rule common_passwords_win.txt",
+            "attackCmd": "#HL# -a 0 -r api_rulelist.txt api_wordlist.txt",
             "chunksize": 600,
             "statusTimer": 5,
             "benchmarkType": "speed",
@@ -214,21 +214,15 @@ def make_all_calls():
 
 
     # Add files
-    print("WORDLIST: ")
-    print(wordlist)
-    print("RULELIST: ")
-    print(rulelist)
     add_file_inline(wordlist, "api_wordlist.txt", 0)
     add_file_inline(rulelist, "api_rulelist.txt", 1)
     print("FILES ADDED")
 
     # List files
     files = list_files()
-    print("FILES LISTED: ")
+    print("FILES LISTED")
     print(files)
-
-    print("HASHLIST: ")
-    print(hashlist)
+    
     # Create hashlist
     hashlistId = create_hashlist(hashlist)
     print("HASHLIST CREATED")
@@ -245,7 +239,7 @@ def make_all_calls():
     print(taskId)
 
     # Assign agent
-    agent = assign_agent(9, taskId)
+    agent = assign_agent(11, taskId)
     print("AGENT ASSIGNED")
     print(agent)
 
