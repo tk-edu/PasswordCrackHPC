@@ -44,6 +44,24 @@ async def on_message(message: cl.Message):
     runnable = cl.user_session.get("runnable")
 
     msg = cl.Message(content="")
+    
+    def get_list_from_message(message):
+    # Check if the user attached a file
+        if len(message.elements) > 0:
+            with open(message.elements[0].path, "r") as file:
+                the_list = file.read().strip()
+        # Assume the list is in the message
+        else:
+            # Assume that the list is
+            # after the first colon
+            the_list = message.content.split(":", 1)[1].strip()
+            # If a URL is provided, get the
+            # list from there
+            if validators.url(the_list):
+                print(f"Got {the_list} from remote source")
+                the_list = requests.get(the_list).text.strip()
+        return the_list
+    
 
     if re.search(r"Start cracking", message.content, re.IGNORECASE):
         if 'hashlist' in globals() and 'wordlist' in globals() and 'rulelist' in globals():
@@ -62,52 +80,13 @@ async def on_message(message: cl.Message):
             await msg.stream_token(f"Please provide all three lists to make an API call\n")
             
     elif re.search(r"hash\s*list:?", message.content, re.IGNORECASE):
-        # Check if the user attached a file
-        if len(message.elements) > 0:
-            with open(message.elements[0].path, "r") as file:
-                hashlist = file.read().strip()
-        # Assume the hashlist is in the message
-        else:
-            # Assume that the hashlist is
-            # after the first colon
-            hashlist = message.content.split(":", 1)[1].strip()
-            # If a URL is provided, get the
-            # hashlist from there
-            if validators.url(hashlist):
-                print("Got hashlist from remote source")
-                hashlist = requests.get(hashlist).text.strip()
-        
+        hashlist = get_list_from_message(message)
+            
     elif re.search(r"word\s*list:?", message.content, re.IGNORECASE):
-        # Check if the user attached a file
-        if len(message.elements) > 0:
-            with open(message.elements[0].path, "r") as file:
-                wordlist = file.read().strip()
-        # Assume the wordlist is in the message
-        else:
-            # Assume that the wordlist is
-            # after the first colon
-            wordlist = message.content.split(":", 1)[1].strip()
-            # If a URL is provided, get the
-            # wordlist from there
-            if validators.url(wordlist):
-                print("Got wordlist from remote source")
-                wordlist = requests.get(wordlist).text.strip()
-        
+        wordlist = get_list_from_message(message)
+            
     elif re.search(r"rule\s*list:?", message.content, re.IGNORECASE):
-        # Check if the user attached a file
-        if len(message.elements) > 0:
-            with open(message.elements[0].path, "r") as file:
-                rulelist = file.read().strip()
-        # Assume the rulelist is in the message
-        else:
-            # Assume that the rulelist is
-            # after the first colon
-            rulelist = message.content.split(":", 1)[1].strip()
-            # If a URL is provided, get the
-            # rulelist from there
-            if validators.url(rulelist):
-                print("Got rulelist from remote source")
-                rulelist = requests.get(rulelist).text.strip()
+        rulelist = get_list_from_message(message)
         
     else:
         async for chunk in runnable.astream(
